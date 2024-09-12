@@ -13,9 +13,14 @@ public class OrganizationResponsible implements Serializable {
     @Id
     private UUID id;
 
-    @Column(name = "organization_id")
-    private UUID organizationId;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private Employee user;
+
+//    @Column(name = "user_id")
+//    private UUID userId;
 }

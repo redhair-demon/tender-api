@@ -1,9 +1,9 @@
 package io.codefresh.gradleexample.service;
 
 import io.codefresh.gradleexample.entity.*;
+import io.codefresh.gradleexample.repository.EmployeeRepository;
 import io.codefresh.gradleexample.repository.TenderRepository;
 import io.codefresh.gradleexample.repository.TenderRevisionRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,8 @@ public class TenderService {
         return this.tenderRepository.findAllByServiceTypeIn(type, pageable).getContent();
     }
 
-    public List<Tender> findByUser(String username, Pageable pageable) {
-        return this.tenderRepository.findAllByCreatorUsername(username, pageable).getContent();
+    public List<Tender> findForUser(UUID organizationId, TenderStatus status, Pageable pageable) {
+        return this.tenderRepository.findAllByOrganizationIdOrStatus(organizationId, status, pageable).getContent();
     }
 
     public Tender update(Tender tender) {
@@ -69,7 +69,16 @@ public class TenderService {
         if (backup == null) throw new NoSuchElementException();
         return update(backup.rollback());
     }
+//    @Autowired
+//    private EmployeeRepository employeeRepository;
 
+//    public Tender store(Tender.DTO tender) {
+//        Tender t = tender.cast();
+//        t.setCreator(this.employeeRepository.findByUsername(tender.creatorUsername));
+//        t.setOrganization(t.getCreator().getResponsible().getOrganization());
+//        System.out.println(t);
+//        return this.tenderRepository.save(t);
+//    }
     public Tender store(Tender tender) {
         return this.tenderRepository.save(tender);
     }

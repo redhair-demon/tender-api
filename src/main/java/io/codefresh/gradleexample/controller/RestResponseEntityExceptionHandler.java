@@ -36,5 +36,11 @@ public class RestResponseEntityExceptionHandler{// extends ResponseEntityExcepti
 //                new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
-//    protected handle
+    @ExceptionHandler(value = {
+            IllegalAccessException.class
+    })
+    protected ResponseEntity<Object> handle401() {
+        String bodyOfResponse = "401 error";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(bodyOfResponse);
+    }
 }

@@ -1,9 +1,8 @@
 package io.codefresh.gradleexample.controller;
 
 import io.codefresh.gradleexample.config.OffsetBasedPageRequest;
-import io.codefresh.gradleexample.entity.Tender;
-import io.codefresh.gradleexample.entity.TenderServiceType;
-import io.codefresh.gradleexample.entity.TenderStatus;
+import io.codefresh.gradleexample.entity.*;
+import io.codefresh.gradleexample.service.EmployeeService;
 import io.codefresh.gradleexample.service.TenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +18,8 @@ import java.util.UUID;
 public class TenderController {
     @Autowired
     private TenderService tenderService;
+    @Autowired
+    private EmployeeService employeeService;
 
     @GetMapping
     public List<Tender> get(
@@ -37,26 +38,30 @@ public class TenderController {
     )
     public Tender post(
             @RequestBody Tender tender
-    ) {
+    ) throws IllegalAccessException {
+        UUID organizationId = getUserOrganizationId(tender.getCreatorUsername());
+        System.out.printf("%s %s %s\n", organizationId, tender.getOrganizationId(), organizationId == tender.getOrganizationId());
+        if (organizationId != tender.getOrganizationId()) throw new IllegalAccessException();
         return this.tenderService.store(tender);
     }
 
     @GetMapping("/my")
     public List<Tender> getMy(
-            @RequestParam(name = "username") String username,
+            @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "limit", required = false, defaultValue = "5") Integer limit,
             @RequestParam(name = "offset", required = false, defaultValue = "0") Integer offset
     ) {
         Pageable pageable = new OffsetBasedPageRequest(offset, limit, Sort.by("name"));
-        return this.tenderService.findByUser(username, pageable);
+        UUID organizationId = getUserOrganizationId(username);
+        return this.tenderService.findForUser(organizationId, TenderStatus.Published, pageable);
     }
 
     @GetMapping("/{id}/status")
     public TenderStatus get(
             @PathVariable UUID id,
             @RequestParam(name = "username", required = false) String username
-    ) {
-        return this.tenderService.findById(id).getStatus();
+    ) throws IllegalAccessException {
+        return checkUser(id, username).getStatus();
     }
 
     @PutMapping("/{id}/status")
@@ -64,7 +69,8 @@ public class TenderController {
             @PathVariable UUID id,
             @RequestParam(name = "status") TenderStatus status,
             @RequestParam(name = "username") String username
-    ) {
+    ) throws IllegalAccessException {
+        checkUser(id, username);
         this.tenderService.setStatus(id, status);
         return this.tenderService.findById(id);
     }
@@ -78,7 +84,8 @@ public class TenderController {
             @PathVariable UUID id,
             @RequestBody Tender tender,
             @RequestParam(name = "username") String username
-    ) {
+    ) throws IllegalAccessException {
+        checkUser(id, username);
         tender.setId(id);
         return this.tenderService.update(tender);
     }
@@ -88,7 +95,23 @@ public class TenderController {
             @PathVariable UUID id,
             @PathVariable Integer version,
             @RequestParam(name = "username") String username
-    ) {
+    ) throws IllegalAccessException {
+        checkUser(id, username);
         return this.tenderService.rollback(id, version);
+    }
+
+    private Tender checkUser(UUID id, String username) throws IllegalAccessException {
+        Tender tender = this.tenderService.findById(id);
+        UUID organizationId = getUserOrganizationId(username);
+        if (organizationId != tender.getOrganizationId()) throw new IllegalAccessException();
+        return tender;
+    }
+
+    private UUID getUserOrganizationId(String username) {
+        if (username == null) return null;
+        Employee e = this.employeeService.findByUsername(username);
+        OrganizationResponsible responsible = e.getResponsible();
+        System.out.printf("%s %s\n", e, responsible.getId());
+        return (responsible == null) ? null : responsible.getOrganization().getId();
     }
 }

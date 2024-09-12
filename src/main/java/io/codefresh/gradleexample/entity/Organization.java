@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -30,4 +31,8 @@ public class Organization implements Serializable {
 
     @Column(name = "updated_at")
     private Date updatedAt;
+
+//    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    @JoinColumn(name = "tenders")
+//    private Set<Tender> tenders;
 }

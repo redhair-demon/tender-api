@@ -19,7 +19,7 @@ import java.util.UUID;
 public interface TenderRepository extends JpaRepository<Tender, UUID> {
     public Page<Tender> findAll(Pageable pageable);
     public Page<Tender> findAllByServiceTypeIn(Collection<TenderServiceType> serviceType, Pageable pageable);
-    public Page<Tender> findAllByCreatorUsername(String creator_username, Pageable pageable);
+    public Page<Tender> findAllByOrganizationIdOrStatus(UUID organizationId, TenderStatus status, Pageable pageable);
 
     @Transactional
     @Modifying
