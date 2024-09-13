@@ -131,7 +131,7 @@ public class BidController {
     private void checkUserWrite(UUID id, String username) {
         Bid bid = this.bidService.findById(id);
         UUID organizationId = getUserOrganizationId(username);
-        if (!isTenderCreator(bid, organizationId)) throw new InvalidRightsException("Not enough rights to perform this operation");
+        if (!isBidAuthor(username, bid, organizationId)) throw new InvalidRightsException("Not enough rights to perform this operation");
     }
 
     private UUID getUserOrganizationId(String username) {
