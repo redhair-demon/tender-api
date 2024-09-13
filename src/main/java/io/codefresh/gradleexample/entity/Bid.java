@@ -29,7 +29,7 @@ public class Bid implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private BidStatus status;
+    private BidStatus status = BidStatus.Created;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -40,7 +40,7 @@ public class Bid implements Serializable {
     private UUID tenderId;
 
     public UUID getTenderId() {
-        return tender.getId();
+        return (tender != null) ? tender.getId() : tenderId;
     }
     @JsonIgnore
     public UUID getWritedTenderId() {

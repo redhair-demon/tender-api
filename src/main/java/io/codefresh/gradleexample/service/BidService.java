@@ -35,7 +35,7 @@ public class BidService {
     }
 
     public Bid update(Bid bid) {
-        Bid old = findById(bid.getId());
+        Bid old = this.bidRepository.findById(bid.getId()).orElseThrow();
         boolean changed = false;
         if (bid.getName() != null && !bid.getName().equals(old.getName())) {
             old.setName(bid.getName());
