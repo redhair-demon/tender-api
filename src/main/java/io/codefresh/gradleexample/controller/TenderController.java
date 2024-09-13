@@ -1,5 +1,7 @@
 package io.codefresh.gradleexample.controller;
 
+import io.codefresh.gradleexample.config.InvalidRightsException;
+import io.codefresh.gradleexample.config.InvalidUserException;
 import io.codefresh.gradleexample.config.OffsetBasedPageRequest;
 import io.codefresh.gradleexample.entity.*;
 import io.codefresh.gradleexample.service.EmployeeService;
@@ -38,10 +40,9 @@ public class TenderController {
     )
     public Tender post(
             @RequestBody Tender tender
-    ) throws IllegalAccessException {
+    ) {
         UUID organizationId = getUserOrganizationId(tender.getCreatorUsername());
-        System.out.printf("%s %s %s\n", organizationId, tender.getOrganizationId(), organizationId == tender.getOrganizationId());
-        if (organizationId != tender.getOrganizationId()) throw new IllegalAccessException();
+        if (!organizationId.equals(tender.getOrganizationId())) throw new InvalidRightsException("Not enough rights to perform this operation");
         return this.tenderService.store(tender);
     }
 
@@ -60,8 +61,8 @@ public class TenderController {
     public TenderStatus get(
             @PathVariable UUID id,
             @RequestParam(name = "username", required = false) String username
-    ) throws IllegalAccessException {
-        return checkUser(id, username).getStatus();
+    ) {
+        return checkUserRead(id, username).getStatus();
     }
 
     @PutMapping("/{id}/status")
@@ -69,8 +70,8 @@ public class TenderController {
             @PathVariable UUID id,
             @RequestParam(name = "status") TenderStatus status,
             @RequestParam(name = "username") String username
-    ) throws IllegalAccessException {
-        checkUser(id, username);
+    ) {
+        checkUserWrite(id, username);
         this.tenderService.setStatus(id, status);
         return this.tenderService.findById(id);
     }
@@ -84,8 +85,8 @@ public class TenderController {
             @PathVariable UUID id,
             @RequestBody Tender tender,
             @RequestParam(name = "username") String username
-    ) throws IllegalAccessException {
-        checkUser(id, username);
+    ) {
+        checkUserWrite(id, username);
         tender.setId(id);
         return this.tenderService.update(tender);
     }
@@ -95,23 +96,30 @@ public class TenderController {
             @PathVariable UUID id,
             @PathVariable Integer version,
             @RequestParam(name = "username") String username
-    ) throws IllegalAccessException {
-        checkUser(id, username);
+    ) {
+        checkUserWrite(id, username);
         return this.tenderService.rollback(id, version);
     }
 
-    private Tender checkUser(UUID id, String username) throws IllegalAccessException {
+    private Tender checkUserRead(UUID id, String username) {
         Tender tender = this.tenderService.findById(id);
         UUID organizationId = getUserOrganizationId(username);
-        if (organizationId != tender.getOrganizationId()) throw new IllegalAccessException();
+        if (!tender.getOrganizationId().equals(organizationId) && !tender.getStatus().equals(TenderStatus.Published))
+            throw new InvalidRightsException("Not enough rights to perform this operation");
         return tender;
+    }
+
+    private void checkUserWrite(UUID id, String username) {
+        Tender tender = this.tenderService.findById(id);
+        UUID organizationId = getUserOrganizationId(username);
+        if (!organizationId.equals(tender.getOrganizationId())) throw new InvalidRightsException("Not enough rights to perform this operation");
     }
 
     private UUID getUserOrganizationId(String username) {
         if (username == null) return null;
         Employee e = this.employeeService.findByUsername(username);
+        if (e == null) throw new InvalidUserException("User not exists or invalid");
         OrganizationResponsible responsible = e.getResponsible();
-        System.out.printf("%s %s\n", e, responsible.getId());
         return (responsible == null) ? null : responsible.getOrganization().getId();
     }
 }

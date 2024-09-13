@@ -1,7 +1,6 @@
 package io.codefresh.gradleexample.service;
 
 import io.codefresh.gradleexample.entity.*;
-import io.codefresh.gradleexample.repository.EmployeeRepository;
 import io.codefresh.gradleexample.repository.TenderRepository;
 import io.codefresh.gradleexample.repository.TenderRevisionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,16 +68,7 @@ public class TenderService {
         if (backup == null) throw new NoSuchElementException();
         return update(backup.rollback());
     }
-//    @Autowired
-//    private EmployeeRepository employeeRepository;
 
-//    public Tender store(Tender.DTO tender) {
-//        Tender t = tender.cast();
-//        t.setCreator(this.employeeRepository.findByUsername(tender.creatorUsername));
-//        t.setOrganization(t.getCreator().getResponsible().getOrganization());
-//        System.out.println(t);
-//        return this.tenderRepository.save(t);
-//    }
     public Tender store(Tender tender) {
         return this.tenderRepository.save(tender);
     }

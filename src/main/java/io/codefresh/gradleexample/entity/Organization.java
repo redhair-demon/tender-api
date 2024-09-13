@@ -1,5 +1,6 @@
 package io.codefresh.gradleexample.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -32,7 +33,7 @@ public class Organization implements Serializable {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-//    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "tenders")
-//    private Set<Tender> tenders;
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<OrganizationResponsible> responsibles;
 }

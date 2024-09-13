@@ -1,17 +1,19 @@
 package io.codefresh.gradleexample.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.hibernate.envers.Audited;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-@Audited
 @Entity
 @Table(name = "bids")
 @Getter
+@Setter
 public class Bid implements Serializable {
 
     @Id
@@ -29,8 +31,21 @@ public class Bid implements Serializable {
     @Column(name = "status")
     private BidStatus status;
 
-    @Column(name = "tender_id")
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "tender_id")
+    private Tender tender;
+
+    @Transient
     private UUID tenderId;
+
+    public UUID getTenderId() {
+        return tender.getId();
+    }
+    @JsonIgnore
+    public UUID getWritedTenderId() {
+        return tenderId;
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "author_type")
@@ -40,8 +55,24 @@ public class Bid implements Serializable {
     private UUID authorId;
 
     @Column(name = "version")
-    private Integer version;
+    private Integer version = 1;
 
     @Column(name = "created_at")
-    private Date createdAt;
+    private Date createdAt = new Date();
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "bid_id"),
+            inverseJoinColumns = @JoinColumn(name = "responsible_id")
+    )
+    private List<OrganizationResponsible> approvers;
+
+    public void addApprover(OrganizationResponsible approver) {
+        this.approvers.add(approver);
+    }
+
+    @JsonIgnore
+    @OneToOne
+    private BidReview bidReview;
 }

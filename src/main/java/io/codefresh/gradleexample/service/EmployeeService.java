@@ -18,8 +18,6 @@ public class EmployeeService {
     }
 
     public Employee findByUsername(String username) {
-        Employee employee = this.employeeRepository.findByUsername(username);
-        if (employee == null) throw new NoSuchElementException();
-        return employee;
+        return this.employeeRepository.findByUsername(username);
     }
 }

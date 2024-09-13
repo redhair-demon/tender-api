@@ -45,10 +45,9 @@ public class Tender implements Serializable {
     @Column(name = "creator_username", nullable = false, updatable = false)
     private String creatorUsername;
 
-//    @JsonIgnore
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "organization_id")
-//    private Organization organization;
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "tender")
+    private List<Bid> bids;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -65,39 +64,4 @@ public class Tender implements Serializable {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt = new Date();
 
-//    public static class DTO {
-//        public UUID id;
-//        public String name;
-//        public String description;
-//        public TenderServiceType serviceType;
-//        public TenderStatus status;
-//        public UUID organizationId;
-//        public String creatorUsername;
-//        public Integer version;
-//        public Date createdAt;
-//
-//        DTO (Tender t) {
-//            this.id = t.getId();
-//            this.name = t.getName();
-//            this.description = t.getDescription();
-//            this.serviceType = t.getServiceType();
-//            this.status = t.getStatus();
-////            this.organizationId = t.getOrganization().getId();
-//            this.creatorUsername = t.getCreatorUsername();
-//            this.version = t.getVersion();
-//            this.createdAt = t.getCreatedAt();
-//        }
-//        DTO() {}
-//
-//        public Tender cast() {
-//            Tender t = new Tender();
-//            t.setName(name);
-//            t.setDescription(description);
-//            t.setServiceType(serviceType);
-//            t.setStatus(status);
-//            t.setCreatorUsername(creatorUsername);
-//            t.setVersion(version);
-//            return t;
-//        }
-//    }
 }

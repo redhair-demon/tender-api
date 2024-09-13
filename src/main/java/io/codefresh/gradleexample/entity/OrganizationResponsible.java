@@ -20,7 +20,4 @@ public class OrganizationResponsible implements Serializable {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private Employee user;
-
-//    @Column(name = "user_id")
-//    private UUID userId;
 }
