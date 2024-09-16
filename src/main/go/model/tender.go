@@ -15,15 +15,18 @@ type Tender struct {
 	OrganizationId  uuid.UUID `json:"organizationId"`
 	Version         int       `json:"version"`
 	CreatedAt       time.Time `json:"createdAt"`
-	bids            []Bid
 }
 
 func NewTender(name string, description string, serviceType string, creatorUsername string) *Tender {
-	return &Tender{Id: uuid.New(), Name: name, Description: description, Status: "Created", ServiceType: serviceType, CreatorUsername: creatorUsername, Version: 1, CreatedAt: time.Now(), bids: []Bid{}}
+	return &Tender{Id: uuid.New(), Name: name, Description: description, Status: TenderStatusCreated, ServiceType: serviceType, CreatorUsername: creatorUsername, Version: 1, CreatedAt: time.Now()}
 }
 
 const (
 	TenderStatusCreated   = "Created"
 	TenderStatusPublished = "Published"
 	TenderStatusClosed    = "Closed"
+
+	ServiceTypeDelivery     = "Delivery"
+	ServiceTypeConstruction = "Construction"
+	ServiceTypeManufacture  = "Manufacture"
 )

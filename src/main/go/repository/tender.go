@@ -21,7 +21,7 @@ type Page struct {
 	Offset int `json:"offset"`
 }
 
-func listQuery(query string, page Page) string {
+func getTendersQuery(query string, page Page) string {
 	return selectTender + query + fmt.Sprintf(orderLimitOffset, page.Limit, page.Offset)
 }
 
@@ -41,7 +41,7 @@ func userIsTenderCreator(db *pgxpool.Pool, tender model.Tender, username string)
 }
 
 func FindAllTenders(db *pgxpool.Pool, page Page) ([]model.Tender, error) {
-	rows, err := db.Query(context.Background(), listQuery("", page))
+	rows, err := db.Query(context.Background(), getTendersQuery("", page))
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +63,10 @@ func FindPublishedTenders(db *pgxpool.Pool, serviceType []string, page Page) ([]
 	var rows pgx.Rows
 	var err error
 	if len(serviceType) == 0 {
-		query = listQuery(" WHERE t.status = 'Published'", page)
+		query = getTendersQuery(" WHERE t.status = 'Published'", page)
 		rows, err = db.Query(context.Background(), query)
 	} else {
-		query = listQuery(" WHERE t.status = 'Published' AND t.service_type = ANY ($1)", page)
+		query = getTendersQuery(" WHERE t.status = 'Published' AND t.service_type = ANY ($1)", page)
 		rows, err = db.Query(context.Background(), query, serviceType)
 	}
 	fmt.Println(query)
@@ -110,7 +110,7 @@ func FindTenderByIdAndUserAccess(db *pgxpool.Pool, id uuid.UUID, username string
 }
 
 func FindTendersByUsername(db *pgxpool.Pool, username string, page Page) ([]model.Tender, error) {
-	rows, err := db.Query(context.Background(), listQuery(" JOIN employee e1 ON e1.username = t.creator_username JOIN organization_responsible r1 on r1.user_id = e1.id JOIN employee e2 ON e2.username = $1 JOIN organization_responsible r2 ON r2.user_id = e2.id WHERE r1.organization_id = r2.organization_id", page), username)
+	rows, err := db.Query(context.Background(), getTendersQuery(" JOIN employee e1 ON e1.username = t.creator_username JOIN organization_responsible r1 on r1.user_id = e1.id JOIN employee e2 ON e2.username = $1 JOIN organization_responsible r2 ON r2.user_id = e2.id WHERE r1.organization_id = r2.organization_id", page), username)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func RollbackTenderById(db *pgxpool.Pool, id uuid.UUID, version int, username st
 	row := db.QueryRow(context.Background(), "SELECT name, description, service_type FROM tenders_rev WHERE tender_id = $1 AND version = $2", id, version)
 	var backup model.Tender
 	if err := row.Scan(&backup.Id, &backup.Name, &backup.Description, &backup.Status, &backup.ServiceType, &backup.Version, &backup.CreatedAt, &backup.OrganizationId); err != nil {
-		return nil, errors.New("No such version for tender")
+		return nil, errors.New("no such version for tender")
 	}
 	row = db.QueryRow(context.Background(), "UPDATE tenders SET (name, description, service_type) = ($1, $2, $3), version = version+1 WHERE id = $4 RETURNING id, name, description, status, service_type, version, created_at, organization_id", backup.Name, backup.Description, backup.ServiceType, id)
 	var t model.Tender
