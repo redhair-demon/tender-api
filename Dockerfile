@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./src/main/go/go.mod ./src/main/go/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY ./src/main/go/* ./
 
 RUN go build -o main .
 
@@ -19,4 +19,4 @@ ENV SERVER_ADDRESS=0.0.0.0:8080
 
 EXPOSE 8080
 
-CMD ["./src/main/go/main"]
+CMD ["./main"]
