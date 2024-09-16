@@ -19,4 +19,4 @@ ENV SERVER_ADDRESS=0.0.0.0:8080
 
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["./src/main/go/main"]
